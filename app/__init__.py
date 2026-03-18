@@ -1,4 +1,6 @@
 from flask import Flask
+from .database import db
+from .models import user
 
 def create_app():
 	app = Flask(__name__)
@@ -9,6 +11,8 @@ def create_app():
 	@app.route("/health")
 	def health():
 		return {"status":"ok"}
+	
+	db.init_app(app)
 
 	return app
 
