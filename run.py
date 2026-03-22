@@ -1,7 +1,6 @@
 from app import create_app
 from app.database import db
-from app.models.user import User as user
-import inspect
+
 
 
 #Gets the function from __init__.py and creates the app
