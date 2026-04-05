@@ -50,13 +50,7 @@ class User(db.Model):
             success (True if the password was set successfully, False otherwise), and the second element is an optional error message
              (None if the password was set successfully, or a string describing the error if it was not).
         """
-
-        if self.is_string(password) == False:
-            return (False,"Password must be a non-empty string.")
         
-        if len(password) < 8 or len(password) > 128:
-            return (False,"Password must be between 8 and 128 characters long.")
-
         self.password_hash = generate_password_hash(password)
         return (True,None)
     
