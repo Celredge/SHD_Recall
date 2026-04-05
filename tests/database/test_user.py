@@ -138,6 +138,8 @@ EDGE_CASES_STATUS_VALID = {
     ("status", "Away"),
 }
 
+
+
 #-------------
 #Schema Load Tests
 #-------------
@@ -295,6 +297,145 @@ def test_invalid_longitude(schema, valid_user_dict,field,value):
         schema.load(cop)
         
     assert field in excinfo.value.messages
+
+#-------------
+#Model Method Tests
+#-------------
+
+def test_password_hashing(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    user.set_password(valid_user_dict["password"])
+    assert user.password_hash != valid_user_dict["password"]  # Ensure password is hashed
+    assert user.check_password(valid_user_dict["password"])[0] == True  # Check correct password
+
+def test_check_password_invalid(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    user.set_password(valid_user_dict["password"])
+    assert user.check_password("WrongPassword1!")[0] == False  # Check incorrect password
+
+def test_check_password_edge_cases(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    user.set_password(valid_user_dict["password"])
+    
+    # Test non-string password
+    assert user.check_password(12345) == (False, "Password must be a non-empty string.")
+    
+    # Test too short password
+    assert user.check_password("short1!") == (False, "Password must be between 8 and 128 characters long.")
+
+def test_to_dict(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    user.set_password(valid_user_dict["password"])
+    user_dict = user.to_dict()
+
+    assert user_dict["id"] == None  # ID should be None before being added to the database
+    assert user_dict["badge_num"] == valid_user_dict["badge_num"]
+    assert user_dict["name"] == valid_user_dict["name"]
+    assert user_dict["latitude"] == valid_user_dict["latitude"]
+    assert user_dict["longitude"] == valid_user_dict["longitude"]
+    assert user_dict["status"] == valid_user_dict["status"]
+    assert "password" not in user_dict
+
+def test_set_admin(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    assert user.admin == False  # Default should be False
+    user.set_admin()
+    assert user.admin == True   # Should toggle to True
+    user.set_admin()
+    assert user.admin == False  # Should toggle back to False
+
+def test_update_status(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    assert user.status == valid_user_dict["status"]  # Initial status
+    user.status = "Away"
+    assert user.status == "Away"  # Updated status
+
+def test_update_status_invalid(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    # Attempt to set an invalid status
+    result = user.update_status("Busy")
+    assert result == (False, "Status must be one of ['Online', 'Offline', 'Away']")
+    assert user.status == valid_user_dict["status"]  # Status should remain unchanged
+
+def test_set_location(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    # Update location with valid coordinates
+    result = user.set_location(37.7749, -122.4194)
+    assert result == (True, None)
+    assert user.latitude == 37.7749
+    assert user.longitude == -122.4194
+
+def test_set_location_invalid(valid_user_dict):
+    user = User(
+        badge_num=valid_user_dict["badge_num"],
+        name=valid_user_dict["name"],
+        latitude=valid_user_dict["latitude"],
+        longitude=valid_user_dict["longitude"],
+        status=valid_user_dict["status"]
+    )
+
+    # Attempt to set invalid latitude and longitude
+    result = user.set_location(-100.0, 200.0)
+    assert result == (False, "Latitude must be between -90 and 90.")
+    assert user.latitude == valid_user_dict["latitude"]  # Latitude should remain unchanged
+    assert user.longitude == valid_user_dict["longitude"]  # Longitude should remain unchanged
+
 
 
 

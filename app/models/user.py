@@ -23,6 +23,15 @@ class User(db.Model):
 
         super().__init__(**kwargs)
 
+        # Ensure Python-level defaults
+        if "admin" not in kwargs:
+            self.admin = False
+        if "status" not in kwargs:
+            self.status = "Offline"
+        if "last_seen" not in kwargs:
+            from datetime import datetime, timezone
+            self.last_seen = datetime.now(timezone.utc)
+
     #Note: last_seen needs to use lambdas because datetime.now is evaluated once at runtime, not per instance. Using a lambda ensures that a new
     #timestamp is generated each time a User instance is created or updated, rather than all instances sharing the same timestamp.
     id =db.Column(db.Integer, primary_key=True)
@@ -104,9 +113,7 @@ class User(db.Model):
             Needed because we cannot access attributes outside of the class
             without assigning all to "self".
         """
-        if self.admin == None:
-            self.admin = False
-        
+    
         if self.admin == False: 
             self.admin = True 
         else: 
