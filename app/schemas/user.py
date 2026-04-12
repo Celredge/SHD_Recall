@@ -19,7 +19,6 @@ class UserSchema(Schema):
         validate.Regexp(r'.*[0-9].*',error="Password must contain at least one digit."),
         validate.Regexp(r'.*[!@#$%^&*(),.?":{}|<>].*',error="Password must contain at least one special character.")])
     
-    status = fields.Str(validate=validate.OneOf(["Online","Offline","Away"]))
     latitude = fields.Float(validate=validate.Range(min=-90, max=90))
     longitude = fields.Float(validate=validate.Range(min=-180, max=180))
     
